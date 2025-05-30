@@ -16,14 +16,13 @@ interface UsersState {
   currentUser: User | null;
   loading: boolean;
   error: string | null;
-  isEnsuringAuthentication: boolean;
+  isEnsuringAuthentication?: true;
 }
 
 const initialState: UsersState = {
   currentUser: null,
   loading: false,
   error: null,
-  isEnsuringAuthentication: false,
 };
 
 export const usersSlice = createAppSlice({
@@ -81,7 +80,7 @@ export const usersSlice = createAppSlice({
       },
       rejected: () => initialState,
       settled(state) {
-        state.isEnsuringAuthentication = false;
+        delete state.isEnsuringAuthentication;
       },
       options: {
         condition(_, { getState }) {

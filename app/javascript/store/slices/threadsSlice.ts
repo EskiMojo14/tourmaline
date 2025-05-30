@@ -99,10 +99,7 @@ export const threadsSlice = createAppSlice({
         },
         fulfilled(state, action) {
           if (state.currentThread) {
-            if (!state.currentThread.posts) {
-              state.currentThread.posts = [];
-            }
-            state.currentThread.posts.push(action.payload);
+            (state.currentThread.posts ??= []).push(action.payload);
           }
         },
         rejected(state, action) {

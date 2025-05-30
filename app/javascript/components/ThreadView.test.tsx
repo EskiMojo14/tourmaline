@@ -9,6 +9,7 @@ import {
   mockPost,
 } from "../test/utils";
 import ThreadView from "./ThreadView";
+import { AppPreloadedState } from "@/store";
 
 // Mock the Redux actions
 const mockFetchThread = vi.fn();
@@ -19,9 +20,9 @@ vi.mock("../store/slices/threadsSlice", async () => {
   const actual = await vi.importActual("../store/slices/threadsSlice");
   return {
     ...actual,
-    fetchThread: () => mockFetchThread,
-    createPost: () => mockCreatePost,
-    clearCurrentThread: () => mockClearCurrentThread,
+    fetchThread: () => () => ({ unwrap: mockFetchThread }),
+    createPost: () => () => ({ unwrap: mockCreatePost }),
+    clearCurrentThread: () => () => ({ unwrap: mockClearCurrentThread }),
   };
 });
 
@@ -34,7 +35,7 @@ describe("ThreadView", () => {
   });
 
   it("renders loading state initially", () => {
-    const preloadedState = {
+    const preloadedState: AppPreloadedState = {
       threads: {
         threads: [],
         currentThread: null,
@@ -42,7 +43,6 @@ describe("ThreadView", () => {
         error: null,
       },
       users: {
-        isAuthenticated: false,
         currentUser: null,
         loading: false,
         error: null,
@@ -60,7 +60,7 @@ describe("ThreadView", () => {
   });
 
   it("renders thread not found when no current thread", () => {
-    const preloadedState = {
+    const preloadedState: AppPreloadedState = {
       threads: {
         threads: [],
         currentThread: null,
@@ -68,7 +68,6 @@ describe("ThreadView", () => {
         error: null,
       },
       users: {
-        isAuthenticated: false,
         currentUser: null,
         loading: false,
         error: null,
@@ -87,7 +86,7 @@ describe("ThreadView", () => {
   });
 
   it("renders error state", () => {
-    const preloadedState = {
+    const preloadedState: AppPreloadedState = {
       threads: {
         threads: [],
         currentThread: null,
@@ -95,7 +94,6 @@ describe("ThreadView", () => {
         error: "Failed to load thread",
       },
       users: {
-        isAuthenticated: false,
         currentUser: null,
         loading: false,
         error: null,
@@ -120,7 +118,7 @@ describe("ThreadView", () => {
       posts: [mockPost, { ...mockPost, id: 2, content: "Second post" }],
     };
 
-    const preloadedState = {
+    const preloadedState: AppPreloadedState = {
       threads: {
         threads: [],
         currentThread: threadWithPosts,
@@ -128,7 +126,6 @@ describe("ThreadView", () => {
         error: null,
       },
       users: {
-        isAuthenticated: false,
         currentUser: null,
         loading: false,
         error: null,
@@ -157,7 +154,7 @@ describe("ThreadView", () => {
       posts: [],
     };
 
-    const preloadedState = {
+    const preloadedState: AppPreloadedState = {
       threads: {
         threads: [],
         currentThread: threadWithoutPosts,
@@ -165,7 +162,6 @@ describe("ThreadView", () => {
         error: null,
       },
       users: {
-        isAuthenticated: false,
         currentUser: null,
         loading: false,
         error: null,
@@ -186,7 +182,7 @@ describe("ThreadView", () => {
   });
 
   it("shows login prompt for unauthenticated users", () => {
-    const preloadedState = {
+    const preloadedState: AppPreloadedState = {
       threads: {
         threads: [],
         currentThread: mockThread,
@@ -194,7 +190,6 @@ describe("ThreadView", () => {
         error: null,
       },
       users: {
-        isAuthenticated: false,
         currentUser: null,
         loading: false,
         error: null,
@@ -215,7 +210,7 @@ describe("ThreadView", () => {
   });
 
   it("shows reply form for authenticated users", () => {
-    const preloadedState = {
+    const preloadedState: AppPreloadedState = {
       threads: {
         threads: [],
         currentThread: mockThread,
@@ -223,7 +218,6 @@ describe("ThreadView", () => {
         error: null,
       },
       users: {
-        isAuthenticated: true,
         currentUser: mockUser,
         loading: false,
         error: null,
@@ -249,7 +243,7 @@ describe("ThreadView", () => {
   it("handles reply form submission", async () => {
     const user = userEvent.setup();
 
-    const preloadedState = {
+    const preloadedState: AppPreloadedState = {
       threads: {
         threads: [],
         currentThread: mockThread,
@@ -257,7 +251,6 @@ describe("ThreadView", () => {
         error: null,
       },
       users: {
-        isAuthenticated: true,
         currentUser: mockUser,
         loading: false,
         error: null,
@@ -284,7 +277,7 @@ describe("ThreadView", () => {
   });
 
   it("disables submit button when textarea is empty", () => {
-    const preloadedState = {
+    const preloadedState: AppPreloadedState = {
       threads: {
         threads: [],
         currentThread: mockThread,
@@ -292,7 +285,6 @@ describe("ThreadView", () => {
         error: null,
       },
       users: {
-        isAuthenticated: true,
         currentUser: mockUser,
         loading: false,
         error: null,
@@ -313,7 +305,7 @@ describe("ThreadView", () => {
   it("calls onBack when back button is clicked", async () => {
     const user = userEvent.setup();
 
-    const preloadedState = {
+    const preloadedState: AppPreloadedState = {
       threads: {
         threads: [],
         currentThread: mockThread,
@@ -321,7 +313,6 @@ describe("ThreadView", () => {
         error: null,
       },
       users: {
-        isAuthenticated: false,
         currentUser: null,
         loading: false,
         error: null,
@@ -342,7 +333,7 @@ describe("ThreadView", () => {
   });
 
   it("displays thread metadata correctly", () => {
-    const preloadedState = {
+    const preloadedState: AppPreloadedState = {
       threads: {
         threads: [],
         currentThread: {
@@ -353,7 +344,6 @@ describe("ThreadView", () => {
         error: null,
       },
       users: {
-        isAuthenticated: false,
         currentUser: null,
         loading: false,
         error: null,
@@ -376,7 +366,7 @@ describe("ThreadView", () => {
   it("shows character count in reply form", async () => {
     const user = userEvent.setup();
 
-    const preloadedState = {
+    const preloadedState: AppPreloadedState = {
       threads: {
         threads: [],
         currentThread: mockThread,
@@ -384,7 +374,6 @@ describe("ThreadView", () => {
         error: null,
       },
       users: {
-        isAuthenticated: true,
         currentUser: mockUser,
         loading: false,
         error: null,

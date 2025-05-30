@@ -4,6 +4,7 @@ import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithProviders, mockThread, mockUser } from "../test/utils";
 import ThreadList from "./ThreadList";
+import { AppPreloadedState } from "@/store";
 
 // Mock the Redux actions
 const mockFetchThreads = vi.fn();
@@ -26,7 +27,7 @@ describe("ThreadList", () => {
   });
 
   it("renders loading state initially", () => {
-    const preloadedState = {
+    const preloadedState: AppPreloadedState = {
       threads: {
         threads: [],
         currentThread: null,
@@ -34,7 +35,6 @@ describe("ThreadList", () => {
         error: null,
       },
       users: {
-        isAuthenticated: false,
         currentUser: null,
         loading: false,
         error: null,
@@ -54,7 +54,7 @@ describe("ThreadList", () => {
       { ...mockThread, id: 2, title: "Second Thread" },
     ];
 
-    const preloadedState = {
+    const preloadedState: AppPreloadedState = {
       threads: {
         threads: mockThreads,
         currentThread: null,
@@ -62,7 +62,6 @@ describe("ThreadList", () => {
         error: null,
       },
       users: {
-        isAuthenticated: false,
         currentUser: null,
         loading: false,
         error: null,
@@ -79,7 +78,7 @@ describe("ThreadList", () => {
   });
 
   it("renders empty state when no threads", () => {
-    const preloadedState = {
+    const preloadedState: AppPreloadedState = {
       threads: {
         threads: [],
         currentThread: null,
@@ -87,7 +86,6 @@ describe("ThreadList", () => {
         error: null,
       },
       users: {
-        isAuthenticated: false,
         currentUser: null,
         loading: false,
         error: null,
@@ -104,7 +102,7 @@ describe("ThreadList", () => {
   });
 
   it("renders error state", () => {
-    const preloadedState = {
+    const preloadedState: AppPreloadedState = {
       threads: {
         threads: [],
         currentThread: null,
@@ -112,7 +110,6 @@ describe("ThreadList", () => {
         error: "Failed to load threads",
       },
       users: {
-        isAuthenticated: false,
         currentUser: null,
         loading: false,
         error: null,
@@ -132,7 +129,7 @@ describe("ThreadList", () => {
     const user = userEvent.setup();
     const mockThreads = [mockThread];
 
-    const preloadedState = {
+    const preloadedState: AppPreloadedState = {
       threads: {
         threads: mockThreads,
         currentThread: null,
@@ -140,7 +137,6 @@ describe("ThreadList", () => {
         error: null,
       },
       users: {
-        isAuthenticated: false,
         currentUser: null,
         loading: false,
         error: null,
@@ -160,7 +156,7 @@ describe("ThreadList", () => {
   it("shows auth modal when unauthenticated user tries to create thread", async () => {
     const user = userEvent.setup();
 
-    const preloadedState = {
+    const preloadedState: AppPreloadedState = {
       threads: {
         threads: [],
         currentThread: null,
@@ -168,7 +164,6 @@ describe("ThreadList", () => {
         error: null,
       },
       users: {
-        isAuthenticated: false,
         currentUser: null,
         loading: false,
         error: null,
@@ -191,7 +186,7 @@ describe("ThreadList", () => {
   it("shows create thread dialog when authenticated user clicks new thread", async () => {
     const user = userEvent.setup();
 
-    const preloadedState = {
+    const preloadedState: AppPreloadedState = {
       threads: {
         threads: [],
         currentThread: null,
@@ -199,7 +194,6 @@ describe("ThreadList", () => {
         error: null,
       },
       users: {
-        isAuthenticated: true,
         currentUser: mockUser,
         loading: false,
         error: null,
@@ -225,7 +219,7 @@ describe("ThreadList", () => {
       user: { ...mockUser, username: "author123" },
     };
 
-    const preloadedState = {
+    const preloadedState: AppPreloadedState = {
       threads: {
         threads: [threadWithMetadata],
         currentThread: null,
@@ -233,7 +227,6 @@ describe("ThreadList", () => {
         error: null,
       },
       users: {
-        isAuthenticated: false,
         currentUser: null,
         loading: false,
         error: null,
@@ -254,7 +247,7 @@ describe("ThreadList", () => {
       posts_count: 1,
     };
 
-    const preloadedState = {
+    const preloadedState: AppPreloadedState = {
       threads: {
         threads: [threadWithOneReply],
         currentThread: null,
@@ -262,7 +255,6 @@ describe("ThreadList", () => {
         error: null,
       },
       users: {
-        isAuthenticated: false,
         currentUser: null,
         loading: false,
         error: null,
