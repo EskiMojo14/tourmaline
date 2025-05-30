@@ -5,6 +5,7 @@ import {
 } from "@/services/api";
 import { AsyncThunkReducers, createAppSlice } from "./utils";
 import { AppStartListening } from "../middleware/listener";
+import { RootState } from "..";
 
 interface User {
   id: number;
@@ -53,7 +54,6 @@ export const usersSlice = createAppSlice({
   reducers: (create) => ({
     passwordMismatch: create.reducer((state) => {
       state.error = "Passwords do not match";
-      state.loading = false;
     }),
     login: create.asyncThunk(
       (credentials: LoginCredentials) => apiService.login(credentials),
@@ -74,10 +74,9 @@ export const usersSlice = createAppSlice({
         delete state.isEnsuringAuthentication;
       },
       options: {
-        condition(_, { getState }) {
+        condition(_, { getState }): boolean {
           // useEffect runs twice, this check prevents duplicate requests
-          return !(getState() as { users: UsersState }).users
-            .isEnsuringAuthentication;
+          return !(getState() as RootState).users.isEnsuringAuthentication;
         },
       },
     }),
