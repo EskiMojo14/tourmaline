@@ -72,7 +72,7 @@ const ThreadList: React.FC<ThreadListProps> = ({ onThreadClick }) => {
     e.preventDefault();
     if (newThread.title.trim() && newThread.content.trim()) {
       try {
-        await dispatch(createThread(newThread));
+        await dispatch(createThread(newThread)).unwrap();
         setNewThread({ title: "", content: "" });
         setIsCreateDialogOpen(false);
       } catch (err) {

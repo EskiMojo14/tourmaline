@@ -67,7 +67,9 @@ const ThreadView: React.FC<ThreadViewProps> = ({ threadId, onBack }) => {
     if (newPostContent.trim()) {
       setIsSubmitting(true);
       try {
-        await dispatch(createPost({ threadId, content: newPostContent }));
+        await dispatch(
+          createPost({ threadId, content: newPostContent })
+        ).unwrap();
         setNewPostContent("");
       } finally {
         setIsSubmitting(false);
