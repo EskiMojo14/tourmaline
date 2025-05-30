@@ -4,7 +4,8 @@ import { apiService } from "@/services/api";
 import { threadsSlice } from "./slices/threadsSlice";
 import { usersSlice } from "./slices/usersSlice";
 
-export type AppExtra = { apiService: typeof apiService };
+const extraArgument = { apiService };
+export type AppExtra = typeof extraArgument;
 
 export const rootReducer = combineSlices(threadsSlice, usersSlice);
 
@@ -16,7 +17,7 @@ export function makeStore(preloadedState?: AppPreloadedState) {
     preloadedState,
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({
-        thunk: { extraArgument: { apiService } satisfies AppExtra },
+        thunk: { extraArgument },
       }).concat(listenerInstance.middleware),
   });
 }
