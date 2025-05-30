@@ -3,7 +3,7 @@ import {
   LoginCredentials,
   SignupCredentials,
 } from "@/services/api";
-import { createAppSlice } from "./utils";
+import { AsyncThunkReducers, createAppSlice } from "./utils";
 import { AppStartListening } from "../middleware/listener";
 
 interface User {
@@ -25,6 +25,28 @@ const initialState: UsersState = {
   error: null,
 };
 
+const makeLoginReducers = (errorMsg: string) =>
+  ({
+    pending(state) {
+      state.loading = true;
+      state.error = null;
+    },
+    fulfilled(state, action) {
+      state.currentUser = action.payload.user;
+    },
+    rejected(state, action) {
+      state.error = action.error.message || errorMsg;
+      state.currentUser = null;
+    },
+    settled(state) {
+      state.loading = false;
+    },
+  }) satisfies AsyncThunkReducers<
+    UsersState,
+    LoginCredentials | SignupCredentials,
+    Awaited<ReturnType<typeof apiService.login | typeof apiService.signup>>
+  >;
+
 export const usersSlice = createAppSlice({
   name: "users",
   initialState,
@@ -35,41 +57,11 @@ export const usersSlice = createAppSlice({
     }),
     login: create.asyncThunk(
       (credentials: LoginCredentials) => apiService.login(credentials),
-      {
-        pending(state) {
-          state.loading = true;
-          state.error = null;
-        },
-        fulfilled(state, action) {
-          state.currentUser = action.payload.user;
-        },
-        rejected(state, action) {
-          state.error = action.error.message || "Login failed";
-          state.currentUser = null;
-        },
-        settled(state) {
-          state.loading = false;
-        },
-      },
+      makeLoginReducers("Login failed"),
     ),
     signup: create.asyncThunk(
       (credentials: SignupCredentials) => apiService.signup(credentials),
-      {
-        pending(state) {
-          state.loading = true;
-          state.error = null;
-        },
-        fulfilled(state, action) {
-          state.currentUser = action.payload.user;
-        },
-        rejected(state, action) {
-          state.error = action.error.message || "Signup failed";
-          state.currentUser = null;
-        },
-        settled(state) {
-          state.loading = false;
-        },
-      },
+      makeLoginReducers("Signup failed"),
     ),
     ensureAuthenticated: create.asyncThunk(() => apiService.getCurrentUser(), {
       pending(state) {
@@ -78,7 +70,6 @@ export const usersSlice = createAppSlice({
       fulfilled(state, action) {
         state.currentUser = action.payload;
       },
-      rejected: () => initialState,
       settled(state) {
         delete state.isEnsuringAuthentication;
       },

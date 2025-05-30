@@ -1,5 +1,5 @@
 import { apiService, Thread, Post } from "../../services/api";
-import { createAppSlice } from "./utils";
+import { AsyncThunkReducers, createAppSlice } from "./utils";
 
 interface ThreadWithPosts extends Thread {
   posts?: Post[];
@@ -18,6 +18,20 @@ const initialState: ThreadsState = {
   loading: false,
   error: null,
 };
+
+const makeStatusReducers = (errorMsg: string) =>
+  ({
+    pending(state) {
+      state.loading = true;
+      state.error = null;
+    },
+    rejected(state, action) {
+      state.error = action.error.message || errorMsg;
+    },
+    settled(state) {
+      state.loading = false;
+    },
+  }) satisfies AsyncThunkReducers<ThreadsState, unknown>;
 
 export const threadsSlice = createAppSlice({
   name: "threads",
@@ -41,51 +55,24 @@ export const threadsSlice = createAppSlice({
       }
     }),
     fetchThreads: create.asyncThunk(() => apiService.getThreads(), {
-      pending(state) {
-        state.loading = true;
-        state.error = null;
-      },
+      ...makeStatusReducers("Failed to fetch threads"),
       fulfilled(state, action) {
         state.threads = action.payload;
       },
-      rejected(state, action) {
-        state.error = action.error.message || "Failed to fetch threads";
-      },
-      settled(state) {
-        state.loading = false;
-      },
     }),
     fetchThread: create.asyncThunk((id: number) => apiService.getThread(id), {
-      pending(state) {
-        state.loading = true;
-        state.error = null;
-      },
+      ...makeStatusReducers("Failed to fetch thread"),
       fulfilled(state, action) {
         state.currentThread = action.payload;
-      },
-      rejected(state, action) {
-        state.error = action.error.message || "Failed to fetch thread";
-      },
-      settled(state) {
-        state.loading = false;
       },
     }),
     createThread: create.asyncThunk(
       (data: { title: string; content: string }) =>
         apiService.createThread(data),
       {
-        pending(state) {
-          state.loading = true;
-          state.error = null;
-        },
+        ...makeStatusReducers("Failed to create thread"),
         fulfilled(state, action) {
           state.threads.unshift(action.payload);
-        },
-        rejected(state, action) {
-          state.error = action.error.message || "Failed to create thread";
-        },
-        settled(state) {
-          state.loading = false;
         },
       },
     ),
@@ -93,20 +80,11 @@ export const threadsSlice = createAppSlice({
       ({ threadId, content }: { threadId: number; content: string }) =>
         apiService.createPost(threadId, content),
       {
-        pending(state) {
-          state.loading = true;
-          state.error = null;
-        },
+        ...makeStatusReducers("Failed to create post"),
         fulfilled(state, action) {
           if (state.currentThread) {
             (state.currentThread.posts ??= []).push(action.payload);
           }
-        },
-        rejected(state, action) {
-          state.error = action.error.message || "Failed to create post";
-        },
-        settled(state) {
-          state.loading = false;
         },
       },
     ),
