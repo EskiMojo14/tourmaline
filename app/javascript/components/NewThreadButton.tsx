@@ -12,9 +12,10 @@ import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
 import { apiService } from "../services/api";
+import { selectCurrentUser } from "@/store/slices/usersSlice";
 
 const NewThreadButton: React.FC = () => {
-  const currentUser = useAppSelector((state) => state.users.currentUser);
+  const currentUser = useAppSelector(selectCurrentUser);
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");

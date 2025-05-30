@@ -19,6 +19,12 @@ import { ArrowLeft, MessageSquare, Clock, User } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import cable from "../services/cable";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { selectIsAuthenticated } from "@/store/slices/usersSlice";
+import {
+  selectCurrentThread,
+  selectIsLoading,
+  selectError,
+} from "@/store/slices/threadsSlice";
 
 interface ThreadViewProps {
   threadId: number;
@@ -27,10 +33,10 @@ interface ThreadViewProps {
 
 const ThreadView: React.FC<ThreadViewProps> = ({ threadId, onBack }) => {
   const dispatch = useAppDispatch();
-  const { currentThread, loading, error } = useAppSelector(
-    (state) => state.threads,
-  );
-  const { isAuthenticated } = useAppSelector((state) => state.users);
+  const currentThread = useAppSelector(selectCurrentThread);
+  const loading = useAppSelector(selectIsLoading);
+  const error = useAppSelector(selectError);
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
 
   const [newPostContent, setNewPostContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);

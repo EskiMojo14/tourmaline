@@ -1,33 +1,19 @@
 import React, { ReactElement } from "react";
 import { render, RenderOptions } from "@testing-library/react";
 import { Provider } from "react-redux";
-import { configureStore, combineReducers } from "@reduxjs/toolkit";
-import threadsReducer from "../store/slices/threadsSlice";
-import usersReducer from "../store/slices/usersSlice";
-
-// Create a test store
-export const createTestStore = (preloadedState: object = {}) => {
-  const rootReducer = combineReducers({
-    threads: threadsReducer,
-    users: usersReducer,
-  });
-  return configureStore({
-    reducer: rootReducer,
-    preloadedState,
-  });
-};
+import { AppPreloadedState, AppStore, makeStore } from "@/store";
 
 // Custom render function that includes providers
 interface CustomRenderOptions extends Omit<RenderOptions, "wrapper"> {
-  preloadedState?: object;
-  store?: ReturnType<typeof createTestStore>;
+  preloadedState?: AppPreloadedState;
+  store?: AppStore;
 }
 
 export const renderWithProviders = (
   ui: ReactElement,
   {
-    preloadedState = {},
-    store = createTestStore(preloadedState),
+    preloadedState,
+    store = makeStore(preloadedState),
     ...renderOptions
   }: CustomRenderOptions = {},
 ) => {

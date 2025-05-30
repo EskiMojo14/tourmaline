@@ -3,32 +3,24 @@ import { Button } from "./ui/button";
 import AuthModal from "./AuthModal";
 import { apiService } from "../services/api";
 import {
-  setCurrentUser,
-  setLoading,
-  logout as logoutAction,
+  logout,
+  ensureAuthenticated,
+  selectCurrentUser,
+  selectIsAuthenticated,
 } from "../store/slices/usersSlice";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 
 const Header: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { currentUser, isAuthenticated } = useAppSelector(
-    (state) => state.users,
-  );
+  const currentUser = useAppSelector(selectCurrentUser);
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const [authModalOpen, setAuthModalOpen] = useState(false);
 
   useEffect(() => {
     // Check if user is already authenticated on app load
     const checkAuth = async () => {
       if (apiService.isAuthenticated()) {
-        try {
-          dispatch(setLoading(true));
-          const user = await apiService.getCurrentUser();
-          dispatch(setCurrentUser(user));
-        } catch {
-          // Token might be expired, clear it
-          await apiService.logout();
-          dispatch(logoutAction());
-        }
+        dispatch(ensureAuthenticated());
       }
     };
 
@@ -36,8 +28,7 @@ const Header: React.FC = () => {
   }, [dispatch]);
 
   const handleLogout = async () => {
-    await apiService.logout();
-    dispatch(logoutAction());
+    dispatch(logout());
   };
 
   return (

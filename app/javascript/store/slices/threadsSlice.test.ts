@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { configureStore } from "@reduxjs/toolkit";
-import threadsReducer, {
+import {
   fetchThreads,
   fetchThread,
   createThread,
@@ -9,6 +9,7 @@ import threadsReducer, {
   ThreadsState,
 } from "./threadsSlice";
 import { mockThread, mockPost } from "../../test/utils";
+import { makeStore } from "..";
 
 // Mock the API service
 vi.mock("../../services/api", () => ({
@@ -17,6 +18,7 @@ vi.mock("../../services/api", () => ({
     getThread: vi.fn(),
     createThread: vi.fn(),
     createPost: vi.fn(),
+    logout: vi.fn(),
   },
 }));
 
@@ -28,11 +30,7 @@ describe("threadsSlice", () => {
   let store: ReturnType<typeof configureStore<TestStore>>;
 
   beforeEach(() => {
-    store = configureStore({
-      reducer: {
-        threads: threadsReducer,
-      },
-    });
+    store = makeStore();
     vi.clearAllMocks();
   });
 

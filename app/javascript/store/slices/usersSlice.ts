@@ -1,4 +1,10 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {
+  apiService,
+  LoginCredentials,
+  SignupCredentials,
+} from "@/services/api";
+import { createAppSlice } from "./utils";
+import { AppStartListening } from "../middleware/listener";
 
 interface User {
   id: number;
@@ -10,42 +16,102 @@ interface UsersState {
   currentUser: User | null;
   loading: boolean;
   error: string | null;
-  isAuthenticated: boolean;
+  isEnsuringAuthentication: boolean;
 }
 
 const initialState: UsersState = {
   currentUser: null,
   loading: false,
   error: null,
-  isAuthenticated: false,
+  isEnsuringAuthentication: false,
 };
 
-const usersSlice = createSlice({
+export const usersSlice = createAppSlice({
   name: "users",
   initialState,
-  reducers: {
-    setCurrentUser: (state, action: PayloadAction<User | null>) => {
-      state.currentUser = action.payload;
-      state.isAuthenticated = !!action.payload;
+  reducers: (create) => ({
+    passwordMismatch: create.reducer((state) => {
+      state.error = "Passwords do not match";
       state.loading = false;
-      state.error = null;
-    },
-    setLoading: (state, action: PayloadAction<boolean>) => {
-      state.loading = action.payload;
-    },
-    setError: (state, action: PayloadAction<string>) => {
-      state.error = action.payload;
-      state.loading = false;
-    },
-    logout: (state) => {
-      state.currentUser = null;
-      state.isAuthenticated = false;
-      state.loading = false;
-      state.error = null;
-    },
+    }),
+    login: create.asyncThunk(
+      (credentials: LoginCredentials) => apiService.login(credentials),
+      {
+        pending(state) {
+          state.loading = true;
+          state.error = null;
+        },
+        fulfilled(state, action) {
+          state.currentUser = action.payload.user;
+        },
+        rejected(state, action) {
+          state.error = action.error.message || "Login failed";
+          state.currentUser = null;
+        },
+        settled(state) {
+          state.loading = false;
+        },
+      },
+    ),
+    signup: create.asyncThunk(
+      (credentials: SignupCredentials) => apiService.signup(credentials),
+      {
+        pending(state) {
+          state.loading = true;
+          state.error = null;
+        },
+        fulfilled(state, action) {
+          state.currentUser = action.payload.user;
+        },
+        rejected(state, action) {
+          state.error = action.error.message || "Signup failed";
+          state.currentUser = null;
+        },
+        settled(state) {
+          state.loading = false;
+        },
+      },
+    ),
+    ensureAuthenticated: create.asyncThunk(() => apiService.getCurrentUser(), {
+      pending(state) {
+        state.isEnsuringAuthentication = true;
+      },
+      fulfilled(state, action) {
+        state.currentUser = action.payload;
+      },
+      rejected: () => initialState,
+      settled(state) {
+        state.isEnsuringAuthentication = false;
+      },
+      options: {
+        condition(_, { getState }) {
+          // useEffect runs twice, this check prevents duplicate requests
+          return !(getState() as { users: UsersState }).users
+            .isEnsuringAuthentication;
+        },
+      },
+    }),
+    logout: create.asyncThunk(() => apiService.logout(), {
+      fulfilled: () => initialState,
+    }),
+  }),
+  selectors: {
+    selectCurrentUser: (state) => state.currentUser,
+    selectIsAuthenticated: (state) => !!state.currentUser,
   },
 });
 
-export const { setCurrentUser, setLoading, setError, logout } =
+export const { passwordMismatch, logout, login, signup, ensureAuthenticated } =
   usersSlice.actions;
-export default usersSlice.reducer;
+export const { selectCurrentUser, selectIsAuthenticated } =
+  usersSlice.selectors;
+
+export const setupExpiredTokenListener = (
+  startAppListening: AppStartListening,
+) =>
+  startAppListening({
+    actionCreator: ensureAuthenticated.rejected,
+    effect: (_, { dispatch }) => {
+      dispatch(logout());
+    },
+  });

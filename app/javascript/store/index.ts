@@ -1,13 +1,27 @@
-import { configureStore } from "@reduxjs/toolkit";
-import threadsReducer from "./slices/threadsSlice";
-import usersReducer from "./slices/usersSlice";
+import { combineSlices, configureStore } from "@reduxjs/toolkit";
+import { listenerInstance } from "./middleware/listener";
+import { apiService } from "@/services/api";
+import { threadsSlice } from "./slices/threadsSlice";
+import { usersSlice } from "./slices/usersSlice";
 
-export const store = configureStore({
-  reducer: {
-    threads: threadsReducer,
-    users: usersReducer,
-  },
-});
+export type AppExtra = { apiService: typeof apiService };
+
+export const rootReducer = combineSlices(threadsSlice, usersSlice);
+
+export type AppPreloadedState = Parameters<typeof rootReducer>[0];
+
+export function makeStore(preloadedState?: AppPreloadedState) {
+  return configureStore({
+    reducer: rootReducer,
+    preloadedState,
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware({
+        thunk: { extraArgument: { apiService } satisfies AppExtra },
+      }).concat(listenerInstance.middleware),
+  });
+}
+
+export const store = makeStore();
 
 export type AppStore = typeof store;
 export type RootState = ReturnType<AppStore["getState"]>;

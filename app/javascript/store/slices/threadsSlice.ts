@@ -19,7 +19,7 @@ const initialState: ThreadsState = {
   error: null,
 };
 
-const threadsSlice = createAppSlice({
+export const threadsSlice = createAppSlice({
   name: "threads",
   initialState,
   reducers: (create) => ({
@@ -114,6 +114,12 @@ const threadsSlice = createAppSlice({
       },
     ),
   }),
+  selectors: {
+    selectThreads: (state) => state.threads,
+    selectCurrentThread: (state) => state.currentThread,
+    selectIsLoading: (state) => state.loading,
+    selectError: (state) => state.error,
+  },
 });
 
 export const {
@@ -126,4 +132,9 @@ export const {
   createThread,
   createPost,
 } = threadsSlice.actions;
-export default threadsSlice.reducer;
+export const {
+  selectThreads,
+  selectCurrentThread,
+  selectIsLoading,
+  selectError,
+} = threadsSlice.selectors;

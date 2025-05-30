@@ -5,16 +5,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import {
-  apiService,
-  LoginCredentials,
-  SignupCredentials,
-} from "../services/api";
-import {
-  setCurrentUser,
-  setLoading,
-  setError,
-} from "../store/slices/usersSlice";
+import { LoginCredentials, SignupCredentials } from "../services/api";
+import { login, signup, passwordMismatch } from "../store/slices/usersSlice";
 
 interface AuthModalProps {
   open: boolean;
@@ -38,35 +30,26 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    dispatch(setLoading(true));
 
-    try {
-      const { user } = await apiService.login(loginData);
-      dispatch(setCurrentUser(user));
+    const resAction = await dispatch(login(loginData));
+    if (resAction.meta.requestStatus === "fulfilled") {
       onOpenChange(false);
       setLoginData({ email: "", password: "" });
-    } catch (error) {
-      dispatch(
-        setError(error instanceof Error ? error.message : "Login failed"),
-      );
-    } finally {
-      setIsSubmitting(false);
     }
+    setIsSubmitting(false);
   };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (signupData.password !== signupData.password_confirmation) {
-      dispatch(setError("Passwords do not match"));
+      dispatch(passwordMismatch());
       return;
     }
 
     setIsSubmitting(true);
-    dispatch(setLoading(true));
 
-    try {
-      const { user } = await apiService.signup(signupData);
-      dispatch(setCurrentUser(user));
+    const resAction = await dispatch(signup(signupData));
+    if (resAction.meta.requestStatus === "fulfilled") {
       onOpenChange(false);
       setSignupData({
         email: "",
@@ -74,13 +57,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
         password_confirmation: "",
         username: "",
       });
-    } catch (error) {
-      dispatch(
-        setError(error instanceof Error ? error.message : "Signup failed"),
-      );
-    } finally {
-      setIsSubmitting(false);
     }
+    setIsSubmitting(false);
   };
 
   return (
