@@ -1,5 +1,5 @@
-import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { apiService, Thread, Post } from "../../services/api";
+import { createAppSlice } from "./utils";
 
 interface ThreadWithPosts extends Thread {
   posts?: Post[];
@@ -19,120 +19,101 @@ const initialState: ThreadsState = {
   error: null,
 };
 
-// Async thunks
-export const fetchThreads = createAsyncThunk(
-  "threads/fetchThreads",
-  async () => {
-    return await apiService.getThreads();
-  },
-);
-
-export const fetchThread = createAsyncThunk(
-  "threads/fetchThread",
-  async (id: number) => {
-    return await apiService.getThread(id);
-  },
-);
-
-export const createThread = createAsyncThunk(
-  "threads/createThread",
-  async (data: { title: string; content: string }) => {
-    return await apiService.createThread(data);
-  },
-);
-
-export const createPost = createAsyncThunk(
-  "threads/createPost",
-  async ({ threadId, content }: { threadId: number; content: string }) => {
-    return await apiService.createPost(threadId, content);
-  },
-);
-
-const threadsSlice = createSlice({
+const threadsSlice = createAppSlice({
   name: "threads",
   initialState,
-  reducers: {
-    clearCurrentThread: (state) => {
+  reducers: (create) => ({
+    clearCurrentThread: create.reducer((state) => {
       state.currentThread = null;
-    },
-    clearError: (state) => {
+    }),
+    clearError: create.reducer((state) => {
       state.error = null;
-    },
-    upsertThread: (state, action: PayloadAction<Thread>) => {
+    }),
+    upsertThread: create.reducer<Thread>((state, action) => {
       // Remove if exists, then unshift (add to top)
       state.threads = state.threads.filter((t) => t.id !== action.payload.id);
       state.threads.unshift(action.payload);
-    },
-    addPostToCurrentThread: (state, action: PayloadAction<Post>) => {
+    }),
+    addPostToCurrentThread: create.reducer<Post>((state, action) => {
       if (state.currentThread) {
         if (!state.currentThread.posts) state.currentThread.posts = [];
         state.currentThread.posts.push(action.payload);
       }
-    },
-  },
-  extraReducers: (builder) => {
-    builder
-      // Fetch threads
-      .addCase(fetchThreads.pending, (state) => {
+    }),
+    fetchThreads: create.asyncThunk(() => apiService.getThreads(), {
+      pending(state) {
         state.loading = true;
         state.error = null;
-      })
-      .addCase(fetchThreads.fulfilled, (state, action) => {
-        state.loading = false;
+      },
+      fulfilled(state, action) {
         state.threads = action.payload;
-      })
-      .addCase(fetchThreads.rejected, (state, action) => {
-        state.loading = false;
+      },
+      rejected(state, action) {
         state.error = action.error.message || "Failed to fetch threads";
-      })
-
-      // Fetch single thread
-      .addCase(fetchThread.pending, (state) => {
+      },
+      settled(state) {
+        state.loading = false;
+      },
+    }),
+    fetchThread: create.asyncThunk((id: number) => apiService.getThread(id), {
+      pending(state) {
         state.loading = true;
         state.error = null;
-      })
-      .addCase(fetchThread.fulfilled, (state, action) => {
-        state.loading = false;
+      },
+      fulfilled(state, action) {
         state.currentThread = action.payload;
-      })
-      .addCase(fetchThread.rejected, (state, action) => {
-        state.loading = false;
+      },
+      rejected(state, action) {
         state.error = action.error.message || "Failed to fetch thread";
-      })
-
-      // Create thread
-      .addCase(createThread.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(createThread.fulfilled, (state, action) => {
+      },
+      settled(state) {
         state.loading = false;
-        state.threads.unshift(action.payload);
-      })
-      .addCase(createThread.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || "Failed to create thread";
-      })
-
-      // Create post
-      .addCase(createPost.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(createPost.fulfilled, (state, action) => {
-        state.loading = false;
-        if (state.currentThread) {
-          if (!state.currentThread.posts) {
-            state.currentThread.posts = [];
+      },
+    }),
+    createThread: create.asyncThunk(
+      (data: { title: string; content: string }) =>
+        apiService.createThread(data),
+      {
+        pending(state) {
+          state.loading = true;
+          state.error = null;
+        },
+        fulfilled(state, action) {
+          state.threads.unshift(action.payload);
+        },
+        rejected(state, action) {
+          state.error = action.error.message || "Failed to create thread";
+        },
+        settled(state) {
+          state.loading = false;
+        },
+      },
+    ),
+    createPost: create.asyncThunk(
+      ({ threadId, content }: { threadId: number; content: string }) =>
+        apiService.createPost(threadId, content),
+      {
+        pending(state) {
+          state.loading = true;
+          state.error = null;
+        },
+        fulfilled(state, action) {
+          if (state.currentThread) {
+            if (!state.currentThread.posts) {
+              state.currentThread.posts = [];
+            }
+            state.currentThread.posts.push(action.payload);
           }
-          state.currentThread.posts.push(action.payload);
-        }
-      })
-      .addCase(createPost.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || "Failed to create post";
-      });
-  },
+        },
+        rejected(state, action) {
+          state.error = action.error.message || "Failed to create post";
+        },
+        settled(state) {
+          state.loading = false;
+        },
+      },
+    ),
+  }),
 });
 
 export const {
@@ -140,5 +121,9 @@ export const {
   clearError,
   upsertThread,
   addPostToCurrentThread,
+  fetchThreads,
+  fetchThread,
+  createThread,
+  createPost,
 } = threadsSlice.actions;
 export default threadsSlice.reducer;
