@@ -1,6 +1,5 @@
 import React from "react";
-import { useSelector } from "react-redux";
-import { RootState } from "@/store";
+import { useAppSelector } from "@/hooks/redux";
 import { Thread } from "@/store/slices/threadsSlice";
 import {
   Card,
@@ -16,7 +15,7 @@ interface ThreadCardProps {
 }
 
 const ThreadCard: React.FC<ThreadCardProps> = ({ thread }) => {
-  const users = useSelector((state: RootState) => state.users.users);
+  const users = useAppSelector((state) => state.users.users);
   const author = users.find((u) => u.id === thread.userId);
   const latestPosts = thread.posts.slice(-2);
 

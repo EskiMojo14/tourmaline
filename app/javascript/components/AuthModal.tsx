@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useAppDispatch } from "@/hooks/redux";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
@@ -22,7 +22,7 @@ interface AuthModalProps {
 }
 
 const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [loginData, setLoginData] = useState<LoginCredentials>({
     email: "",
     password: "",

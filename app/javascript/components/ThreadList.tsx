@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState, AppDispatch } from "../store";
 import {
   fetchThreads,
   createThread,
@@ -26,17 +24,16 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import AuthModal from "./AuthModal";
 import cable from "../services/cable";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 
 interface ThreadListProps {
   onThreadClick: (threadId: number) => void;
 }
 
 const ThreadList: React.FC<ThreadListProps> = ({ onThreadClick }) => {
-  const dispatch = useDispatch<AppDispatch>();
-  const { threads, loading, error } = useSelector(
-    (state: RootState) => state.threads,
-  );
-  const { isAuthenticated } = useSelector((state: RootState) => state.users);
+  const dispatch = useAppDispatch();
+  const { threads, loading, error } = useAppSelector((state) => state.threads);
+  const { isAuthenticated } = useAppSelector((state) => state.users);
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);

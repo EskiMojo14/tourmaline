@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState, AppDispatch } from "../store";
 import {
   fetchThread,
   createPost,
@@ -20,6 +18,7 @@ import { Avatar, AvatarFallback } from "./ui/avatar";
 import { ArrowLeft, MessageSquare, Clock, User } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import cable from "../services/cable";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 
 interface ThreadViewProps {
   threadId: number;
@@ -27,11 +26,11 @@ interface ThreadViewProps {
 }
 
 const ThreadView: React.FC<ThreadViewProps> = ({ threadId, onBack }) => {
-  const dispatch = useDispatch<AppDispatch>();
-  const { currentThread, loading, error } = useSelector(
-    (state: RootState) => state.threads,
+  const dispatch = useAppDispatch();
+  const { currentThread, loading, error } = useAppSelector(
+    (state) => state.threads,
   );
-  const { isAuthenticated } = useSelector((state: RootState) => state.users);
+  const { isAuthenticated } = useAppSelector((state) => state.users);
 
   const [newPostContent, setNewPostContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);

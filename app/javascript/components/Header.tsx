@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../store";
 import { Button } from "./ui/button";
 import AuthModal from "./AuthModal";
 import { apiService } from "../services/api";
@@ -9,11 +7,12 @@ import {
   setLoading,
   logout as logoutAction,
 } from "../store/slices/usersSlice";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 
 const Header: React.FC = () => {
-  const dispatch = useDispatch();
-  const { currentUser, isAuthenticated } = useSelector(
-    (state: RootState) => state.users,
+  const dispatch = useAppDispatch();
+  const { currentUser, isAuthenticated } = useAppSelector(
+    (state) => state.users,
   );
   const [authModalOpen, setAuthModalOpen] = useState(false);
 

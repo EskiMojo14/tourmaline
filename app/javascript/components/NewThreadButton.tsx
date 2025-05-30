@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { useSelector } from "react-redux";
-import { RootState } from "../store";
+import { useAppSelector } from "@/hooks/redux";
 import { Button } from "./ui/button";
 import {
   Dialog,
@@ -15,9 +14,7 @@ import { Label } from "./ui/label";
 import { apiService } from "../services/api";
 
 const NewThreadButton: React.FC = () => {
-  const currentUser = useSelector(
-    (state: RootState) => state.users.currentUser,
-  );
+  const currentUser = useAppSelector((state) => state.users.currentUser);
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
